@@ -1,6 +1,6 @@
 # NDVI Time Series Analysis
 
-This repository provides code and tools for processing and analyzing NDVI time series data for crop phenology and remote sensing studies. It addresses gaps in satellite vegetation indices (due to clouds or missing data) by allowing you to mask periods and apply gap-filling techniques such as cubic spline and linear interpolation.
+This repository provides code and tools for processing and analyzing NDVI time series data for crop phenology and remote sensing studies. It addresses gaps in satellite vegetation indices (due to clouds or missing data) by allowing you to mask periods and apply gap-filling techniques such as spline interpolation.
 
 **Code Structure:**
 - `main.py` — Orchestrates workflow
