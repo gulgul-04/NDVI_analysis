@@ -23,7 +23,3 @@ def spline_interpolate_ndvi(dates, ndvi):
     f_spline = interp1d(x[mask], y[mask], kind='cubic', fill_value='extrapolate')
     y_interp = f_spline(x)
     return y_interp
-def linear_interpolate_ndvi(dates, ndvi):
-    s = pd.Series(ndvi, index=pd.to_datetime(dates))
-    ndvi_interp = s.interpolate(method='linear', limit_direction='both')
-    return ndvi_interp.values
