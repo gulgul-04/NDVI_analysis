@@ -29,12 +29,22 @@ image_list = ndvi_collection.toList(count)
 dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f = stats.extract_ndvi_stats(image_list, region, count)
 
 # Handle missing data with spline and linear interpolation
-means_f_masked = interpolate.mask_dates_for_interpolation(dates_f, means_f, "2024-06-01", "2024-10-22")
-means_spline = interpolate.spline_interpolate_ndvi(dates_f, means_f_masked)
-means_linear = interpolate.linear_interpolate_ndvi(dates_f, means_f_masked)
+means_f_masked = interpolate.mask_dates_for_interpolation(
+    dates_f, 
+    means_f, 
+    "2024-06-01", "2024-10-22",
+    outside_to_nan=False
+)
+means_spline = interpolate.spline_interpolate_ndvi(
+    dates_f, 
+    means_f_masked,
+    method="univariate",
+    smooth=None    
+)
+
 
 # Gaussian smoothing (sigma=2 recommended; adjust for smoothness)
-sigma = 2
+sigma = 3
 means_gauss   = gaussian_filter1d(means_f, sigma=sigma)
 medians_gauss = gaussian_filter1d(medians_f, sigma=sigma)
 stds_gauss    = gaussian_filter1d(stds_f, sigma=sigma)
@@ -61,4 +71,3 @@ plot.plot_ndvi_percentiles(dates_f, perc_10_f, p10_gauss, perc_90_f, p90_gauss)
 plot.plot_valid_pixel_count(dates_f, pixels_f)
 plot.plot_all_ndvi_statistics(dates_f, means_gauss, medians_gauss, p10_gauss, p90_gauss, stds_gauss)
 plot.plot_mean_ndvi_with_spline(dates_f, means_f, means_spline, means_gauss)
-plot.plot_mean_ndvi_with_linear(dates_f, means_f, means_linear, means_gauss)
