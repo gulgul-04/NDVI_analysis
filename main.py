@@ -16,12 +16,14 @@ coords_meters = [
 print("Initializing Earth Engine...")
 gee.initialize_ee(project='brijesh-ndvi')
 
+#Define region and transform coordinates
 print("Transforming coordinates and creating region...")
 coords_lonlat_fixed = gee.transform_coords(coords_meters)
 region = gee.create_region(coords_lonlat_fixed)
 
+# Load Sentinel-2 image collection
 print("Loading Sentinel-2 collection...")
-ic = gee.load_s2_collection(region, '2023-12-01', '2024-12-01', cloud_pct=30)
+ic = gee.load_s2_collection(region, '2023-12-01', '2024-12-01', cloud_pct=90)
 
 count_before = ic.size().getInfo()
 print(f"Number of images in collection before masking: {count_before}")

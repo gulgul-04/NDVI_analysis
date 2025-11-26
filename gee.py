@@ -24,7 +24,7 @@ def create_region(coords_lonlat):
     region = ee.Geometry.Polygon(coords_lonlat)
     return region
 
-def load_s2_collection(region, start_date, end_date, cloud_pct=30):
+def load_s2_collection(region, start_date, end_date, cloud_pct=90):
     ic = (
         ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
         .filterDate(start_date, end_date)
@@ -32,14 +32,6 @@ def load_s2_collection(region, start_date, end_date, cloud_pct=30):
         .filterBounds(region)
     )
     return ic
-
-'''def mask_clouds_s2(img):
-    qa = img.select('QA60')
-    cloudBitMask  = 1 << 10
-    cirrusBitMask = 1 << 11
-    mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(
-        qa.bitwiseAnd(cirrusBitMask).eq(0))
-    return img.updateMask(mask)'''
 
 def add_ndvi(image):
     ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
