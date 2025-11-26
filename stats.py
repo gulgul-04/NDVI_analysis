@@ -12,6 +12,7 @@ def extract_ndvi_stats(image_list, region, count):
     perc_10 = []
     perc_90 = []
     valid_pixels = []
+    valid_pixel_fraction = []
 
     # Iterate through each image to compute statistics and accumulate results
     for i in tqdm(range(count), desc="Processing NDVI stats"):
@@ -32,6 +33,16 @@ def extract_ndvi_stats(image_list, region, count):
         p10 = stats.get('NDVI_p10').getInfo()
         p90 = stats.get('NDVI_p90').getInfo()
         count_valid = stats.get('NDVI_count').getInfo()
+        # Calculate total number of pixels in region
+        total_pixels_stats = ee.Image.constant(1).clip(region).reduceRegion(
+            reducer=ee.Reducer.count(),
+            geometry=region,
+            scale=10,
+            maxPixels=int(1e9)
+        )
+        total_pixels = total_pixels_stats.get('constant').getInfo()
+        valid_fraction = count_valid / total_pixels if total_pixels and count_valid is not None else None
+
         tstamp = img.get('system:time_start').getInfo()
         date_str = datetime.fromtimestamp(tstamp/1000, tz=timezone.utc).strftime('%Y-%m-%d') if tstamp else "Unknown"
 
@@ -42,16 +53,17 @@ def extract_ndvi_stats(image_list, region, count):
         perc_10.append(p10)
         perc_90.append(p90)
         valid_pixels.append(count_valid)
+        valid_pixel_fraction.append(valid_fraction)
 
     #clean and align arrays
     ndvi_data = [
-        (d, mn, md, sd, p1, p9, px)
-        for d, mn, md, sd, p1, p9, px in zip(dates, means, medians, stds, perc_10, perc_90, valid_pixels)
-        if (mn is not None and md is not None and sd is not None and p1 is not None and p9 is not None and px is not None)
+        (d, mn, md, sd, p1, p9, px, vf)
+        for d, mn, md, sd, p1, p9, px, vf in zip(dates, means, medians, stds, perc_10, perc_90, valid_pixels, valid_pixel_fraction)
+        if (mn is not None and md is not None and sd is not None and p1 is not None and p9 is not None and px is not None and vf is not None)
     ]
 
     if ndvi_data:
-        dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f = zip(*ndvi_data)
+        dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, fractions_f = zip(*ndvi_data)
         # Convert to numpy arrays
         means_f      = np.array(means_f, dtype=float)
         medians_f    = np.array(medians_f, dtype=float)
@@ -59,6 +71,7 @@ def extract_ndvi_stats(image_list, region, count):
         perc_10_f    = np.array(perc_10_f, dtype=float)
         perc_90_f    = np.array(perc_90_f, dtype=float)
         pixels_f     = np.array(pixels_f, dtype=int)
-        return (dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f)
+        fractions_f = np.array(fractions_f, dtype=float)
+        return (dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, fractions_f)
     else:
-        return [], np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
+        return [], np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), np.array([])

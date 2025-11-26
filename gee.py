@@ -1,5 +1,6 @@
 import ee
 from pyproj import Transformer
+from cloud_mask import mask_clouds_s2
 
 def initialize_ee(project=None):
     if project:
@@ -32,19 +33,19 @@ def load_s2_collection(region, start_date, end_date, cloud_pct=30):
     )
     return ic
 
-def mask_clouds_s2(img):
+'''def mask_clouds_s2(img):
     qa = img.select('QA60')
     cloudBitMask  = 1 << 10
     cirrusBitMask = 1 << 11
     mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(
         qa.bitwiseAnd(cirrusBitMask).eq(0))
-    return img.updateMask(mask)
+    return img.updateMask(mask)'''
 
 def add_ndvi(image):
     ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
     return image.addBands(ndvi)
 
-def mask_and_calculate_ndvi(ic):
-    ic_masked = ic.map(mask_clouds_s2)
+def mask_and_calculate_ndvi(ic, cloud_threshold=30):
+    ic_masked = ic.map(lambda img: mask_clouds_s2(img, cloud_threshold))
     ndvi_collection = ic_masked.map(add_ndvi)
     return ndvi_collection

@@ -104,6 +104,18 @@ def plot_valid_pixel_count(dates_f, pixels_f):
     plt.tight_layout()
     plt.show()
 
+# Plotting valid pixel fraction
+def plot_valid_pixel_fraction(dates_f, fractions_f):
+    plt.figure(figsize=(10,6))
+    plt.plot(dates_f, fractions_f, marker='o', linestyle='-', color='tab:blue')
+    plt.xlabel('Date')
+    plt.ylabel('Valid Pixel Fraction')
+    plt.title('Valid Pixel Fraction Over Time')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
 # Plotting all NDVI statistics together
 def plot_all_ndvi_statistics(dates_f, means_gauss, medians_gauss, p10_gauss, p90_gauss, stds_gauss):
     plt.figure(figsize=(16,8))
