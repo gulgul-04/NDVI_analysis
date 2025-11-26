@@ -3,6 +3,7 @@ import plot
 import stats
 import gee
 import interpolate
+import weights
 
 #Define the region of interest 
 coords_meters = [
@@ -37,7 +38,11 @@ print(f"Number of images in NDVI collection: {count}")
 image_list = ndvi_collection.toList(count)
 
 # Extract NDVI statistics
-dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, fractions_f = stats.extract_ndvi_stats(image_list, region, count)
+dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, total_pixels_f = stats.extract_ndvi_stats(image_list, region, count)
+
+# Compute valid pixel fraction and assign weights
+fractions_f = weights.calculate_valid_fractions(pixels_f, total_pixels_f)
+weights_f = weights.assign_weights(fractions_f)
 
 # Handle missing data with spline and linear interpolation
 means_f_masked = interpolate.mask_dates_for_interpolation(
@@ -63,8 +68,8 @@ p10_gauss     = gaussian_filter1d(perc_10_f, sigma=sigma)
 p90_gauss     = gaussian_filter1d(perc_90_f, sigma=sigma)
 
 # Pretty text table (aligned)
-header = "|   Date     |  Mean   | Median  |  Std    |  10%    |  90%    | Pixels  | Fraction |"
-separator = "|------------|---------|---------|---------|---------|---------|---------|----------|"
+header = "|   Date     |  Mean   | Median  |  Std    |  10%    |  90%    | Pixels  | Fraction | Weight |"
+separator = "|------------|---------|---------|---------|---------|---------|---------|----------|--------|"
 print(header)
 print(separator)
 
@@ -72,8 +77,8 @@ print(separator)
 def fmt(val):
     return f"{val:7.4f}"
 
-for d, mn, m, s, p1, p9, c, vf in zip(dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, fractions_f):
-    print(f"| {d:<10} | {fmt(mn)} | {fmt(m)} | {fmt(s)} | {fmt(p1)} | {fmt(p9)} | {c:7d} | {fmt(vf)} |")
+for d, mn, m, s, p1, p9, c, vf, w in zip(dates_f, means_f, medians_f, stds_f, perc_10_f, perc_90_f, pixels_f, fractions_f, weights_f):
+    print(f"| {d:<10} | {fmt(mn)} | {fmt(m)} | {fmt(s)} | {fmt(p1)} | {fmt(p9)} | {c:7d} | {fmt(vf)} | {w:6d} |")
 
 
 # Generate plots using the plot module
