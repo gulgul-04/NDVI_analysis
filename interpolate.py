@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d, PchipInterpolator, UnivariateSpline
+from scipy.interpolate import PchipInterpolator, UnivariateSpline
 
 # Mask NDVI values within a specified date range for interpolation
 def mask_dates_for_interpolation(dates, ndvi, start_str, end_str, outside_to_nan=False):
